@@ -21,6 +21,7 @@
     "jsreport-jsrender": "^1.0.2",
     "jsreport-wkhtmltopdf": "^1.4.0",
     "micro": "^7.0.0",
+    "micro-cors": "0.0.4",
     "wkhtmltopdf": "^0.3.4"
   },
   "devDependencies": {
