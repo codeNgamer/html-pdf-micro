@@ -17,11 +17,15 @@
   ],
   "main": "index.js",
   "dependencies": {
+    "cron-file-cleaner": "^1.1.0",
     "jsreport-core": "^1.5.1",
     "jsreport-jsrender": "^1.0.2",
     "jsreport-wkhtmltopdf": "^1.4.0",
+    "lodash": "^4.17.4",
     "micro": "^7.0.0",
     "micro-cors": "0.0.4",
+    "query-string": "^5.0.1",
+    "uuid": "^3.1.0",
     "wkhtmltopdf": "^0.3.4"
   },
   "devDependencies": {
