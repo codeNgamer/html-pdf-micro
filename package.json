@@ -1,0 +1,33 @@
+{
+  "name": "html-pdf-micro",
+  "version": "1.0.0",
+  "description": "Html to pdf microservice",
+  "author": "codeNgamer <ekeneoduah@live.com>",
+  "repository": "codeNgamer/html-pdf-micro",
+  "license": "MIT",
+  "scripts": {
+    "start": "micro",
+    "test": "xo && ava"
+  },
+  "engines": {
+    "node": ">= 6"
+  },
+  "files": [
+    "index.js"
+  ],
+  "main": "index.js",
+  "dependencies": {
+    "jsreport-core": "^1.5.1",
+    "jsreport-jsrender": "^1.0.2",
+    "jsreport-wkhtmltopdf": "^1.4.0",
+    "micro": "^7.0.0",
+    "wkhtmltopdf": "^0.3.4"
+  },
+  "devDependencies": {
+    "async-to-gen": "^1.3.2",
+    "ava": "^0.18.1",
+    "got": "^6.7.1",
+    "test-listen": "^1.0.1",
+    "xo": "^0.17.1"
+  }
+}
