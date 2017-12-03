@@ -4,45 +4,43 @@ const {json, send} = require('micro');
 const jsreport = require('jsreport-core')();
 const cors = require('micro-cors')();
 const _ = require('lodash');
-const FileCleaner = require('cron-file-cleaner').FileCleaner;
 const path = require('path');
-const fs = require('fs');
 const uuidv1 = require('uuid/v1');
 const url = require('url');
-const queryString = require('query-string');
-
-const fileWatcher = new FileCleaner(
-  path.join(__dirname, 'assets'),
-  600000,
-  '* */15 * * * *',
-  {
-    start: true
-  });
-
-const serveFile = async payload => {
-  const { filename, res } = payload;
-  fs.access(
-    path.join(__dirname, 'assets/', `${filename}.pdf`),
-    fs.constants.R_OK | fs.constants.W_OK, (err) => {
-      if (err) return send(res, 404, 'Not Found');
-      const fileStream = fs.createReadStream(
-        path.join(__dirname, 'assets/', `${filename}.pdf`),
-        { flags : 'r' }
-      )
-      fileStream.pipe(res);
-  });
-}
+const aws = require('aws-sdk');
+const s3 = new aws.S3();
 
 const htmlToPdf = ({ html, options, res }) => new Promise(function(resolve, reject) {
   const outputs = {
     'url': resp => {
-      const filename = uuidv1();
-      const fileStream = fs.createWriteStream(
-        path.join(__dirname, 'assets/', `${filename}.pdf`),
-        { flags : 'w' }
-      );
-      resp.stream.pipe(fileStream);
-      resolve(filename);
+      const {
+        fileName: s3Filename,
+        accessKeyId,
+        secretAccessKey,
+        S3_BUCKET,
+      } = options;
+
+      process.env.AWS_ACCESS_KEY_ID = accessKeyId;
+      process.env.AWS_SECRET_ACCESS_KEY = secretAccessKey;
+
+      const fileName = s3Filename || uuidv1();
+       if (!S3_BUCKET) return resolve(send(res, 404, 'Invalid S3_BUCKET name'))
+
+      const s3Params = {
+        Bucket: S3_BUCKET,
+        Key: fileName,
+        Expires: 60,
+        ContentType: 'application/pdf',
+        Body: resp.content,
+        ACL: 'public-read'
+      };
+
+      s3.upload(s3Params, function(err, data) {
+        if (err) {
+          return resolve(send(res, 404, error))
+        }
+        resolve(data);
+      });
     },
     stream: resp => resolve(resp.stream.pipe(res)),
     buffer: resp => resolve(resp.content.toString('base64')),
@@ -73,16 +71,9 @@ const handler = async (req, res) => {
   if (req.method === 'OPTIONS') {
     return {}
   }
-  if (req.method === 'GET') {
-    const { filename } = url.parse(req.url, true).query;
-    if (!filename) return send(res, 404, 'Not Found');
-    return serveFile({ filename: filename, res});
-  }
 	const body = await json(req);
   const {html, options} = body;
 
-
-  // htmlToPdf({ html, options, res });
   return await htmlToPdf({ html, options});
 };
 
