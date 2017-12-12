@@ -37,7 +37,7 @@ const htmlToPdf = ({ html, options, res }) => new Promise(function(resolve, reje
 
       s3.upload(s3Params, function(err, data) {
         if (err) {
-          return resolve(send(res, 404, error))
+          return resolve(send(res, 404, err))
         }
         resolve(data);
       });
@@ -45,6 +45,9 @@ const htmlToPdf = ({ html, options, res }) => new Promise(function(resolve, reje
     stream: resp => resolve(resp.stream.pipe(res)),
     buffer: resp => resolve(resp.content.toString('base64')),
   };
+  const wkhtmltopdf = _.defaults({
+    allowLocalFilesAccess: true
+  }, options);
 
   jsreport.init()
     .then(function () {
@@ -53,9 +56,7 @@ const htmlToPdf = ({ html, options, res }) => new Promise(function(resolve, reje
           content: html,
           engine: 'jsrender',
           recipe: 'wkhtmltopdf',
-          wkhtmltopdf: _.defaults({
-"allowLocalFilesAccess": true
-          }, options)
+          wkhtmltopdf: wkhtmltopdf
         },
         data: _.defaults({}, options.htmlData)
       }).then(function(resp) {
